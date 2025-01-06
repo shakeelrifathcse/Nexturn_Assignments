@@ -1,0 +1,52 @@
+<!-- This is the main layout of the Expense Tracker. It's where users will add, view, and delete their expenses. -->
+<!-- The form lets them input the amount, description, and category, and the table below displays the recorded expenses. -->
+<!-- We also have a canvas here for the pie chart, which will show spending breakdown by category. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Expense Tracker</h1>
+
+        <form id="expenseForm">
+            <input type="number" id="amount" placeholder="Amount" required>
+            <input type="text" id="description" placeholder="Description" required>
+            <select id="category">
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Bills">Bills</option>
+                <option value="Others">Others</option>
+            </select>
+            <button type="submit">Add Expense</button>
+        </form>
+
+        <h2>Total Expenses by Category</h2>
+        <table id="expenseTable">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="expenseList"></tbody>
+        </table>
+
+        <div id="totalByCategory"></div>
+
+        <!-- Add Pie Chart -->
+        <canvas id="expenseChart"></canvas>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
