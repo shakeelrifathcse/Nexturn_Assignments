@@ -1,0 +1,413 @@
+// Part 1: Basic MongoDB Commands and Queries
+//Create Collections and Insert Data:
+
+db.createCollection("customers");
+
+
+db.customers.insertMany([
+  {
+    "name": "Ravi Kumar",
+    "email": "ravi.kumar@gmail.com", // Using Gmail
+    "address": {
+      "street": "123 Shankar Colony",
+      "city": "Bangalore",
+      "zipcode": "560001"
+    },
+    "phone": "9988776655",
+    "registration_date": ISODate("2023-01-01T12:00:00Z")
+  },
+  {
+    "name": "Priya Sharma",
+    "email": "priya.sharma@nexturn.com", // Using Nexturn email
+    "address": {
+      "street": "456 MG Road",
+      "city": "Chennai",
+      "zipcode": "600002"
+    },
+    "phone": "9888776655",
+    "registration_date": ISODate("2023-02-20T10:00:00Z")
+  },
+  {
+    "name": "Amit Singh",
+    "email": "amit.singh@gmail.com", // Using Gmail
+    "address": {
+      "street": "789 Chandra Lane",
+      "city": "Delhi",
+      "zipcode": "110001"
+    },
+    "phone": "9777886655",
+    "registration_date": ISODate("2023-03-15T09:30:00Z")
+  },
+  {
+    "name": "Sunita Verma",
+    "email": "sunita.verma@nexturn.com", // Using Nexturn email
+    "address": {
+      "street": "321 Ashok Nagar",
+      "city": "Mumbai",
+      "zipcode": "400012"
+    },
+    "phone": "9444556677",
+    "registration_date": ISODate("2023-04-10T14:45:00Z")
+  },
+  {
+    "name": "Vikram Patel",
+    "email": "vikram.patel@gmail.com", // Using Gmail
+    "address": {
+      "street": "654 Vijay Park",
+      "city": "Ahmedabad",
+      "zipcode": "380015"
+    },
+    "phone": "9555443322",
+    "registration_date": ISODate("2023-05-05T16:00:00Z")
+  }
+]);
+
+
+
+
+db.createCollection('orders');
+
+
+
+
+
+db.orders.insertMany([
+  {
+    "_id": ObjectId(),
+    "order_id": "ORD123456",
+    "customer_id": ObjectId("60c72b2f9b1d8b218f1e9d2d"), // Ravi Kumar's customer ID
+    "order_date": ISODate("2023-05-15T14:00:00Z"),
+    "status": "shipped",
+    "items": [
+      { "product_name": "Laptop", "quantity": 1, "price": 1500 },
+      { "product_name": "Mouse", "quantity": 2, "price": 25 }
+    ],
+    "total_value": 1550
+  },
+  {
+    "_id": ObjectId(),
+    "order_id": "ORD123457",
+    "customer_id": ObjectId("60c72b2f9b1d8b218f1e9d2e"), // Priya Sharma's customer ID
+    "order_date": ISODate("2023-06-18T16:00:00Z"),
+    "status": "delivered",
+    "items": [
+      { "product_name": "Smartphone", "quantity": 1, "price": 700 },
+      { "product_name": "Charger", "quantity": 1, "price": 30 }
+    ],
+    "total_value": 730
+  },
+  {
+    "_id": ObjectId(),
+    "order_id": "ORD123458",
+    "customer_id": ObjectId("60c72b2f9b1d8b218f1e9d2f"), // Amit Singh's customer ID
+    "order_date": ISODate("2023-07-21T11:00:00Z"),
+    "status": "pending",
+    "items": [
+      { "product_name": "Shirt", "quantity": 3, "price": 30 }
+    ],
+    "total_value": 90
+  },
+  {
+    "_id": ObjectId(),
+    "order_id": "ORD123459",
+    "customer_id": ObjectId("60c72b2f9b1d8b218f1e9d30"), // Sunita Verma's customer ID
+    "order_date": ISODate("2023-08-01T13:00:00Z"),
+    "status": "shipped",
+    "items": [
+      { "product_name": "Washing Machine", "quantity": 1, "price": 400 }
+    ],
+    "total_value": 400
+  },
+  {
+    "_id": ObjectId(),
+    "order_id": "ORD123460",
+    "customer_id": ObjectId("60c72b2f9b1d8b218f1e9d31"), // Vikram Patel's customer ID
+    "order_date": ISODate("2023-09-10T17:00:00Z"),
+    "status": "shipped",
+    "items": [
+      { "product_name": "Headphones", "quantity": 2, "price": 150 }
+    ],
+    "total_value": 300
+  }
+]);
+
+
+
+//Part 2: Aggregation Pipeline
+
+//Calculate Total Value of All Orders by Customer:
+
+db.orders.aggregate([
+  {
+    $group: {
+      _id: "$customer_id",
+      total_order_value: { $sum: "$total_value" }
+    }
+  },
+  {
+    $lookup: {
+      from: "customers",
+      localField: "_id",
+      foreignField: "_id",
+      as: "customer_info"
+    }
+  },
+  {
+    $unwind: "$customer_info"
+  },
+  {
+    $project: {
+      customer_name: "$customer_info.name",
+      total_order_value: 1
+    }
+  }
+]);
+
+
+
+//Group Orders by Status:
+
+db.orders.aggregate([
+  {
+    $group: {
+      _id: "$status",
+      order_count: { $sum: 1 }
+    }
+  }
+]);
+
+
+
+//List Customers with Their Recent Orders:
+
+db.orders.aggregate([
+  {
+    $sort: { order_date: -1 }
+  },
+  {
+    $group: {
+      _id: "$customer_id",
+      most_recent_order: { $first: "$$ROOT" }
+    }
+  },
+  {
+    $lookup: {
+      from: "customers",
+      localField: "_id",
+      foreignField: "_id",
+      as: "customer_info"
+    }
+  },
+  {
+    $unwind: "$customer_info"
+  },
+  {
+    $project: {
+      customer_name: "$customer_info.name",
+      customer_email: "$customer_info.email",
+      order_id: "$most_recent_order.order_id",
+      total_value: "$most_recent_order.total_value",
+      order_date: "$most_recent_order.order_date"
+    }
+  }
+]);
+
+
+
+//Find the Most Expensive Order by Customer:
+
+db.orders.aggregate([
+  {
+    $group: {
+      _id: "$customer_id",
+      most_expensive_order: { $max: "$total_value" },
+      order_id: { $push: "$order_id" },
+      total_value: { $push: "$total_value" }
+    }
+  },
+  {
+    $lookup: {
+      from: "customers",
+      localField: "_id",
+      foreignField: "_id",
+      as: "customer_info"
+    }
+  },
+  {
+    $unwind: "$customer_info"
+  },
+  {
+    $project: {
+      customer_name: "$customer_info.name",
+      most_expensive_order: 1,
+      order_id: 1,
+      total_value: 1
+    }
+  }
+]);
+
+
+
+
+
+
+//Part 3: Real-World Scenario with Relationships
+
+//Find All Customers Who Placed Orders in the Last Month:
+
+db.orders.aggregate([
+  {
+    $match: {
+      order_date: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) }
+    }
+  },
+  {
+    $lookup: {
+      from: "customers",
+      localField: "customer_id",
+      foreignField: "_id",
+      as: "customer_info"
+    }
+  },
+  {
+    $unwind: "$customer_info"
+  },
+  {
+    $project: {
+      customer_name: "$customer_info.name",
+      customer_email: "$customer_info.email",
+      order_date: 1
+    }
+  }
+]);
+
+
+
+//Find All Products Ordered by a Specific Customer:
+
+db.orders.aggregate([
+  {
+    $match: {
+      customer_id: ObjectId("60c72b2f9b1d8b218f1e9d2d") // Example customer ID for "John Doe"
+    }
+  },
+  {
+    $unwind: "$items"
+  },
+  {
+    $group: {
+      _id: "$items.product_name",
+      total_quantity: { $sum: "$items.quantity" }
+    }
+  }
+]);
+
+
+//Find the Top 3 Customers with the Most Expensive Total Orders:
+
+db.orders.aggregate([
+  {
+    $group: {
+      _id: "$customer_id",
+      total_spent: { $sum: "$total_value" }
+    }
+  },
+  {
+    $sort: { total_spent: -1 }
+  },
+  {
+    $limit: 3
+  },
+  {
+    $lookup: {
+      from: "customers",
+      localField: "_id",
+      foreignField: "_id",
+      as: "customer_info"
+    }
+  },
+  {
+    $unwind: "$customer_info"
+  },
+  {
+    $project: {
+      customer_name: "$customer_info.name",
+      total_spent: 1
+    }
+  }
+]);
+
+//Add a New Order for an Existing Customer:
+
+// Find Ravi Kumar's customer ID
+var customer = db.customers.findOne({ name: "Ravi Kumar" });
+
+if (customer) {
+  db.orders.insertOne({
+    "order_id": "ORD123461", // New order ID
+    "customer_id": customer._id, // Use the customer's ObjectId
+    "order_date": ISODate("2024-11-11T12:00:00Z"), // Example order date
+    "status": "pending", // Status of the order
+    "items": [
+      { "product_name": "Smartphone", "quantity": 1, "price": 600 },
+      { "product_name": "Headphones", "quantity": 1, "price": 100 }
+    ],
+    "total_value": 700 // Total value of the order
+  });
+} else {
+  print("Customer 'Ravi Kumar' not found!");
+}
+
+
+//Bonus challenge
+
+//Find Customers Who Have Not Placed Orders:
+
+
+db.customers.aggregate([
+  {
+    $lookup: {
+      from: "orders", // Join with the 'orders' collection
+      localField: "_id", // Field from the 'customers' collection
+      foreignField: "customer_id", // Field from the 'orders' collection
+      as: "orders"
+    }
+  },
+  {
+    $match: {
+      "orders": { $size: 0 } // Only customers with no orders
+    }
+  },
+  {
+    $project: {
+      customer_name: 1,
+      email: 1
+    }
+  }
+]);
+
+//3. Join Customer and Order Data Using $lookup:
+
+
+db.orders.aggregate([
+  {
+    $lookup: {
+      from: "customers",
+      localField: "customer_id",
+      foreignField: "_id",
+      as: "customer_info"
+    }
+  },
+  {
+    $unwind: "$customer_info"
+  },
+  {
+    $project: {
+      customer_name: "$customer_info.name",
+      email: "$customer_info.email",
+      order_id: 1,
+      total_value: 1,
+      order_date: 1
+    }
+  }
+]);
