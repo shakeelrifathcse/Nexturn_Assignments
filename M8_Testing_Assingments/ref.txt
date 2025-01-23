@@ -1,0 +1,17 @@
+PS D:\C_Drive\ShakeelRifath\Testing_Assignments> npm test
+
+> testing_assignments@1.0.0 test
+> jest
+
+ PASS  __tests__/domManipulation.spec.js
+ PASS  __tests__/stringUtilities.spec.js
+ PASS  __tests__/notificationService.spec.js
+ PASS  __tests__/fetchAndDisplayUser.spec.js
+ PASS  __tests__/arrayIndex.spec.js
+ PASS  __tests__/delayedGreeting.spec.js
+
+Test Suites: 6 passed, 6 total
+Tests:       24 passed, 24 total
+Snapshots:   0 total
+Time:        1.643 s
+Ran all test suites.
